@@ -1,0 +1,60 @@
+ks = {
+  "5": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE 5"],
+  "10": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE 10"],
+  "15": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE 15"],
+  "30": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE  30"],
+  "50": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE 50"],
+  "100": [16611, "", "<color=red>{0} ESTA EN UN KILLSTREAK DE 100"]
+};
+
+event onPlayerJoined(player)
+{
+    player.setData("killstreak", 0);
+}
+
+event onPlayerDeath(victim, killer, cause)
+{
+    if(cause == "SUICIDE") return killer.setData("killstreak", 0); // Suicides
+    if(killer == null) return victim.setData("killstreak", 0); // Enviroment death
+    addValue(killer, 1);
+    currentKill = killer.getData("killstreak");
+    ksArray = ks[currentKill.toString()];
+    ksEffectId = ksArray[0];
+    ksCommand = ksArray[1];
+    ksAnnounce = ksArray[2];
+    if (ksArray == undefined)
+    {
+        killer.sudo("/effect {0}".format(47496));
+        victim.setData("killstreak", 0);
+        victim.effects.sendUI(53385, 3, "Killed by: {0}".format(killer.name));
+        return;
+    }
+    killer.sudo("/effect {0}".format(ksEffectId));
+    killer.sudo(ksCommand);
+    victim.setData("killstreak", 0);
+    victim.effects.sendUI(53385, 3, "Killed by: {0}".format(killer.name));
+    broadcast(ksAnnounce.format(killer.name));
+}
+
+event onPlayerRespawned(player){
+  deleteEffect(player);
+}
+
+function addValue(fPlayer, fIncrease)
+{
+	if(!fPlayer.getData("killstreak"))
+	{
+		fPlayer.setData("killstreak", 1);
+		return;
+	}
+    arrayStats = fPlayer.getData("killstreak");
+	arrayStats += fIncrease;
+    fPlayer.setData("killstreak", arrayStats);
+}
+
+function deleteEffect(varKiller)
+{
+    varKiller.effects.clearUIById(53385);
+    varKiller.effects.clearUIById(29844);
+    
+}
